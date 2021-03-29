@@ -1,3 +1,6 @@
 jupyter
 pandas
 xlrd==1.2.0
+openpyxl
+xlsxwriter
+pyinstaller
