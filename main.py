@@ -13,8 +13,8 @@ if __name__ == '__main__':
     
     path = r'./files/PairTradeFoodIndustry.xlsx'
 
-    xls = pd.ExcelFile(path)
-    df = pd.read_excel(xls, '1210大成+1201味全')
+    # xls = pd.ExcelFile(path)
+    # df = pd.read_excel(xls, '1210大成+1201味全')
 
     xls = pd.ExcelFile(path)
     writer = pd.ExcelWriter('output.xlsx', engine='xlsxwriter')
@@ -63,6 +63,7 @@ if __name__ == '__main__':
         
         # image
         fig, ax = plt.subplots()
+        print(df)
 
         plt.figure(figsize=[15, 4.8], dpi=300)
         plt.plot(df.date, df[df.columns[3]], label=df.columns[3])
