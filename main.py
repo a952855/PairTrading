@@ -1,6 +1,13 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
+from io import BytesIO
 
 from PairTrading import PairTrading
+
+# 設定中文字體
+plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
+plt.rcParams['axes.unicode_minus'] = False
 
 if __name__ == '__main__':
     
@@ -31,6 +38,7 @@ if __name__ == '__main__':
 
 
         data = []
+        trad_date_list = []
         for i, df in enumerate(df_list):
             
             if i == 0:
@@ -38,7 +46,8 @@ if __name__ == '__main__':
             else:
                 pt = PairTrading(df, sd, avg)
                 data.append(pt.get_result())
-                
+                trad_date_list += pt.trad_date_list
+
             sd = pt.get_standard_deviation()
             avg = pt.get_average()
             
@@ -51,6 +60,35 @@ if __name__ == '__main__':
         ans_df.loc['平均'] = average
 
         ans_df.to_excel(writer, sheet_name=sheet)
+        
+        # image
+        fig, ax = plt.subplots()
+
+        plt.figure(figsize=[15, 4.8], dpi=300)
+        plt.plot(df.date, df[df.columns[3]], label=df.columns[3])
+        plt.plot(df.date, df[df.columns[4]], label=df.columns[4])
+        plt.xlabel('年分') # 設定x軸標題
+        # plt.xticks(df.date, rotation='vertical') # 設定x軸label以及垂直顯示
+        plt.title(sheet) # 設定圖表標題
+        # date = trad_date_list[0]
+        for date in trad_date_list:
+            plt.axvspan(date[0], date[1], color='green', alpha=0.5)
+
+        plt.legend(loc = 'upper right')
+        plt.savefig(f'{sheet}.png') 
+
+
+
+        workbook  = writer.book
+        worksheet = writer.sheets[sheet]
+
+
+
+        # book=xls.Workbook('abc.xls')
+
+        # sheet=book.add_worksheet('demo')
+
+        worksheet.insert_image('A10', f'{sheet}.png') 
 
         print(f'{sheet} 計算完畢')
 

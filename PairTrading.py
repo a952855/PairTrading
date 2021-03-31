@@ -9,6 +9,7 @@ class PairTrading():
         self.df = df
         self.prev_sd = prev_sd
         self.prev_avg = prev_avg
+        self.trad_date_list = []
         
     '''
     計算標準差
@@ -66,6 +67,7 @@ class PairTrading():
                 trad += 1
                 
                 total += prev_row[1] * prev_row[2] * 2
+                self.trad_date_list.append((prev_row['date'], row['date'])) 
                 
                 if prev_row[3] > prev_row[4]:
                     
@@ -87,7 +89,7 @@ class PairTrading():
                 trad += 1
                 
                 total += prev_row[1] * prev_row[2] * 2
-                
+                self.trad_date_list.append((prev_row['date'], row['date'])) 
                 
                 if prev_row[3] > prev_row[4]:
                     
