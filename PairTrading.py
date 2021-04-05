@@ -102,4 +102,4 @@ class PairTrading():
                         + (row[1] - prev_row[1]) * prev_row[2]
                     
 #         return f'總共交易 {trad} 次, 報酬: {gain}, 總交易金額: {total} \n'
-        return [self.df['date'][0].year, trad, gain / 10]
+        return [self.df['date'][0].year, trad, gain / 10, self.prev_avg, self.prev_sd]
