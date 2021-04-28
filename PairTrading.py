@@ -1,14 +1,11 @@
 class PairTrading():
     
-    df = None
-    prev_sd = 0
-    prev_avg = 0
-    
-    def __init__(self, df, prev_sd = None, prev_avg = None):
+    def __init__(self, df, prev_sd = None, prev_avg = None, input_values = None):
         
         self.df = df
         self.prev_sd = prev_sd
         self.prev_avg = prev_avg
+        self.input_values = input_values
         self.trad_date_list = []
         
     '''
@@ -49,9 +46,10 @@ class PairTrading():
         for index, row in self.df.iterrows():
             
             # 主要為XY之間標準化股價 價差大於 價差的平均加減1.5個價差的標準差 就開倉
-            if (((self.prev_avg + self.prev_sd * 1.5) < row['diff'] <= (self.prev_avg + self.prev_sd * 5)) or 
-                ((self.prev_avg - self.prev_sd * 5) <= row['diff'] < (self.prev_avg - self.prev_sd * 1.5))) and \
-                is_open == False:
+            if (((self.prev_avg + self.prev_sd * self.input_values['input_sd']) < row['diff'] <= (self.prev_avg + self.prev_sd * self.input_values['input_sl'])) or 
+                ((self.prev_avg - self.prev_sd * self.input_values['input_sl']) <= row['diff'] < (self.prev_avg - self.prev_sd * self.input_values['input_sd']))) and \
+                is_open == False and \
+                row[3] != row[4]:
                 
                 # print(f'{row["date"]} 開倉')
             
@@ -80,8 +78,8 @@ class PairTrading():
                         + (prev_row[2] - row[2]) * prev_row[1]
                 
             # 主要為XY之間標準化股價 價差大於 價差的平均加減5個價差的標準差 就強制平倉，就算收益
-            elif ((row['diff'] > (self.prev_avg + self.prev_sd * 5) or 
-                 row['diff'] < (self.prev_avg - self.prev_sd * 5)) and
+            elif ((row['diff'] > (self.prev_avg + self.prev_sd * self.input_values['input_sl']) or 
+                 row['diff'] < (self.prev_avg - self.prev_sd * self.input_values['input_sl'])) and
                  is_open == True):
                 
                 # print(f'{row["date"]} 強制平倉')
@@ -100,6 +98,10 @@ class PairTrading():
                     
                     gain += (prev_row[2] - row[2]) * prev_row[1] \
                         + (row[1] - prev_row[1]) * prev_row[2]
-                    
+        
+        if total != 0:
+            rate = gain / total * 100
+        else:
+            rate = 0
 #         return f'總共交易 {trad} 次, 報酬: {gain}, 總交易金額: {total} \n'
-        return [self.df['date'][0].year, trad, gain / 10, self.prev_avg, self.prev_sd]
+        return [self.df['date'][0].year, trad, gain / 10, rate, self.prev_avg, self.prev_sd]

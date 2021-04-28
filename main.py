@@ -7,7 +7,7 @@ from PairTrading import PairTrading
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
 plt.rcParams['axes.unicode_minus'] = False
 
-def generate_pair_images(df, sheet, trad_date_list):
+def generate_pair_images(df, sheet, trad_date_list, input_values):
 
     a_name, b_name = sheet.split('+')
 
@@ -31,8 +31,11 @@ def generate_pair_images(df, sheet, trad_date_list):
     for date in trad_date_list:
         plt.axvspan(date[0], date[1], color='green', alpha=0.5)
 
-    ax2 = fig.add_subplot(3,1,3)
-    ax2.plot(df.date, df[df.columns[5]], label=df.columns[5])
+    ax3 = fig.add_subplot(3,1,3)
+    ax3.plot(df.date, df[df.columns[5]], label=df.columns[5])
+    ax3.plot(df.date, df['avg'], color='r',label='平均值')
+    ax3.plot(df.date, df['avg'] + df['sd'] * input_values['input_sd'] , 'k--', color='b', label='臨界值')
+    ax3.plot(df.date, df['avg'] - df['sd'] * input_values['input_sd'] , 'k--', color='b', label='臨界值')
     plt.xlabel('年分') # 設定x軸標題
     # plt.xticks(df.date, rotation='vertical') # 設定x軸label以及垂直顯示
     plt.title('標準化股價價差') # 設定圖表標題
@@ -48,8 +51,19 @@ if __name__ == '__main__':
     xls = pd.ExcelFile(path)
     writer = pd.ExcelWriter('output.xlsx', engine='xlsxwriter')
 
+    while True:
+
+        input_sd = input('請輸入開倉之標準差倍數')
+        input_sl = input('請輸入停損之標準差倍數') # stop loss
+
+        check = input(f'開倉: {input_sd}, 停損: {input_sl}, 確認Y/重來N')
+        if check.lower() == 'y':
+            break
+
     for sheet in xls.sheet_names[1:]:
         df = pd.read_excel(path, sheet_name=sheet)
+        df['avg'] = None
+        df['sd'] = None
 
         print(f'{sheet} 正在計算中，請稍等')
         '''
@@ -64,7 +78,7 @@ if __name__ == '__main__':
         sd = 0
         avg = 0
 
-
+        input_values = {'input_sd': float(input_sd), 'input_sl': float(input_sl)}
         data = []
         trad_date_list = []
         for i, df_per_year in enumerate(df_list):
@@ -72,25 +86,30 @@ if __name__ == '__main__':
             if i == 0:
                 pt = PairTrading(df_per_year)
             else:
-                pt = PairTrading(df_per_year, sd, avg)
+                pt = PairTrading(df_per_year, sd, avg, input_values)
                 data.append(pt.get_result())
                 trad_date_list += pt.trad_date_list
+
+                condition = (df['date'] >= f'{df_per_year["date"][0].year}-1-1') & (df['date'] <= f'{df_per_year["date"][0].year}-12-31')
+                df.loc[condition, 'avg'] = avg
+                df.loc[condition, 'sd'] = sd
+
 
             sd = pt.get_standard_deviation()
             avg = pt.get_average()
             
         ans_df = pd.DataFrame(
             data,
-            columns=['年分', '交易次數', '總報酬', '去年標準價平均', '去年標準差'])
+            columns=['年分', '交易次數', '總報酬', '報酬率(%)', '去年標準價平均', '去年標準差'])
 
         average = ans_df.mean()
         average['年分'] = ''
         ans_df.loc['平均'] = average
 
         ans_df.to_excel(writer, sheet_name=sheet)
-        
+
         # image
-        generate_pair_images(df, sheet, trad_date_list)
+        generate_pair_images(df, sheet, trad_date_list, input_values)
 
         workbook  = writer.book
         worksheet = writer.sheets[sheet]
