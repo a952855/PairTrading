@@ -11,8 +11,8 @@ def generate_pair_images(df, sheet, trad_date_list, input_values):
 
     a_name, b_name = sheet.split('+')
 
-    fig = plt.figure(figsize=[15, 10], dpi=300)
-    ax1 = fig.add_subplot(3,1,1)
+    fig = plt.figure(figsize=[20, 13.5])
+    ax1 = fig.add_subplot(4,1,1)
     ax1.plot(df.date, df[df.columns[3]], label=f'{a_name[4:]}（{a_name[:4]}）標準化股價')
     ax1.plot(df.date, df[df.columns[4]], label=f'{b_name[4:]}（{b_name[:4]}）標準化股價')
     plt.xlabel('年分') # 設定x軸標題
@@ -23,19 +23,25 @@ def generate_pair_images(df, sheet, trad_date_list, input_values):
 
     plt.legend(loc = 'upper right')
 
-    ax2 = fig.add_subplot(3,1,2)
+    ax2 = fig.add_subplot(4,1,2)
     ax2.plot(df.date, df[df.columns[5]], label=df.columns[5])
+    plt.xlabel('年分') # 設定x軸標題
+    plt.title('標準化股價價差') # 設定圖表標題
+    # plt.xticks(df.date, rotation='vertical') # 設定x軸label以及垂直顯示
+
+    ax3 = fig.add_subplot(4,1,3)
+    ax3.plot(df.date, df[df.columns[5]], label=df.columns[5])
     plt.xlabel('年分') # 設定x軸標題
     # plt.xticks(df.date, rotation='vertical') # 設定x軸label以及垂直顯示
     plt.title('標準化股價價差') # 設定圖表標題
     for date in trad_date_list:
         plt.axvspan(date[0], date[1], color='green', alpha=0.5)
 
-    ax3 = fig.add_subplot(3,1,3)
-    ax3.plot(df.date, df[df.columns[5]], label=df.columns[5])
-    ax3.plot(df.date, df['avg'], color='r',label='平均值')
-    ax3.plot(df.date, df['avg'] + df['sd'] * input_values['input_sd'] , 'k--', color='b', label='臨界值')
-    ax3.plot(df.date, df['avg'] - df['sd'] * input_values['input_sd'] , 'k--', color='b', label='臨界值')
+    ax4 = fig.add_subplot(4,1,4)
+    ax4.plot(df.date, df[df.columns[5]], label=df.columns[5])
+    ax4.plot(df.date, df['avg'], color='r',label='平均值')
+    ax4.plot(df.date, df['avg'] + df['sd'] * input_values['input_sd'] , 'k--', color='b', label='臨界值')
+    ax4.plot(df.date, df['avg'] - df['sd'] * input_values['input_sd'] , 'k--', color='b', label='臨界值')
     plt.xlabel('年分') # 設定x軸標題
     # plt.xticks(df.date, rotation='vertical') # 設定x軸label以及垂直顯示
     plt.title('標準化股價價差') # 設定圖表標題
